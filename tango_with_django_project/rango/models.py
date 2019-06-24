@@ -22,8 +22,6 @@ class Category(models.Model):
         return self.name
 
 
-
-
 class Page(models.Model):
     #需要两个参数 外键 和删除方式
     category = models.ForeignKey(Category,on_delete=models.CASCADE)

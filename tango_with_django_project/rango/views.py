@@ -1,9 +1,11 @@
 from django.shortcuts import render
 from django.http import HttpResponse
 from rango.models import Category,Page
+from rango.form  import CategoryForm,PageForm
 
 
 def index(request):
+    print("index")
     categorylist = Category.objects.order_by('-likes')[:5]
     pagelist = Page.objects.order_by('-views')[:5]
     #构建一个字典，作为上下文传递给模板引擎
@@ -42,3 +44,20 @@ def show_category(request, category_name_slug):
         context_dict['pages'] = None
         # 渲染响应，返回给客户端
     return render(request, 'rango/category.html', context_dict)
+
+
+def add_category(request):
+    form = CategoryForm()
+    print("add!")
+    #是HTTP POST请求吗？
+    if request.method == 'POST':
+        form = CategoryForm(request.POST)
+        #
+        if form.is_valid():
+            print(form)
+            form.save(commit=True)
+            return index(request)
+        else:
+            print(form.errors)
+
+    return render(request,'rango/add_category.html',{'form':form})
