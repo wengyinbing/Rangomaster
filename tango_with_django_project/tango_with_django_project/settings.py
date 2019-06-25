@@ -21,6 +21,7 @@ STATIC_DIR = os.path.join(BASE_DIR, 'static')
 #媒体文件 比如用户上传的动态文件 头像
 MEDIA_DIR = os.path.join(BASE_DIR, 'media')
 print(STATIC_DIR)
+TEMPLATETAGS = os.path.join(BASE_DIR,'rango\\templatetags')
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/2.2/howto/deployment/checklist/
 
@@ -73,6 +74,7 @@ TEMPLATES = [
                 'django.contrib.messages.context_processors.messages',
                 'django.template.context_processors.media',
             ],
+
         },
     },
 ]
