@@ -10,10 +10,12 @@ django从1.9迁移到了2.0 将 django.urls
 from django.core.urlresolvers import reverse 
 '''
 from django.contrib.auth.decorators import login_required
-
+from datetime import datetime
 
 def index(request):
     print("index")
+    #测试浏览器是否支持cookie
+    request.session.set_test_cookie()
     categorylist = Category.objects.order_by('-likes')[:5]
     pagelist = Page.objects.order_by('-views')[:5]
     #构建一个字典，作为上下文传递给模板引擎
@@ -21,12 +23,14 @@ def index(request):
     #模板上下文就是一个字典，将模板变量名映射到一个值上
     context_dict = {'boldmessage':"Crunchy, creamy, cookie, candy, cupcake!",
                     'categories':categorylist,
-                    'pages':pagelist
+                    'pages':pagelist,
+                    'visits':int(request.COOKIES.get('visits','1')),
                     }
+    response = render(request,'rango/index.html',context = context_dict)
 
+    visitor_cookie_handle(request,response)
 
-    return render(request,'rango/index.html',context = context_dict)
-
+    return response
 
 def show_category(request, category_name_slug):
     # 创建上下文字典，稍后传给模板渲染引擎
@@ -158,3 +162,21 @@ def restricted(request):
 def user_logout(request):
     logout(request)
     return HttpResponseRedirect(reverse('index'))
+
+#辅助函数
+def visitor_cookie_handle(request,response):
+    #获取网站的访问次数，如果visits存在，则转换为整数，如果不存在，赋值为1
+    visits = int(request.COOKIES.get('visits','1'))
+
+    last_visit_cookie = request.COOKIES.get('last_visit', str(datetime.now()))
+    last_visit_time = datetime.strptime(last_visit_cookie[:-7],
+                                        '%Y-%m-%d %H:%M:%S')
+
+    #如果距离上次访问已经超过了一天
+    if(datetime.now() - last_visit_time).days > 0:
+        visits += 1
+        response.set_cookie('last_visit',str(datetime.now()))
+    else:
+        response.set_cookie('last_visit',last_visit_cookie)
+
+    response.set_cookie('visits',visits)
