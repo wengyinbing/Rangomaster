@@ -1,6 +1,6 @@
 from django.db import models
 from django.template.defaultfilters import  slugify
-
+from django.contrib.auth.models import User
 
 # Create your models here.
 class Category(models.Model):
@@ -31,4 +31,17 @@ class Page(models.Model):
 
     def __str__(self):
         return self.title
+
+
+class UserProfile(models.Model):
+    #建立与User的关系,里面需要提供一个删除的的方式on_delete
+    user = models.OneToOneField(User,on_delete=models.CASCADE)
+
+    #添加自己想加的属性
+    website = models.URLField(blank=True)
+    picture = models.ImageField(upload_to='profile_images',blank=True)
+
+    #覆盖__str__()方法，返回有意义的字符串
+    def __str__(self):
+        return self.user.username
 

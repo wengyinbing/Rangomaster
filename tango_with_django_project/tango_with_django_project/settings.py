@@ -21,6 +21,8 @@ STATIC_DIR = os.path.join(BASE_DIR, 'static')
 #媒体文件 比如用户上传的动态文件 头像
 MEDIA_DIR = os.path.join(BASE_DIR, 'media')
 print(STATIC_DIR)
+#
+LOGIN_URL = '/rango/login/'
 TEMPLATETAGS = os.path.join(BASE_DIR,'rango\\templatetags')
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/2.2/howto/deployment/checklist/
@@ -46,6 +48,17 @@ INSTALLED_APPS = [
     'rango'
 ]
 
+PASSWORD_HASHERS = (
+'django.contrib.auth.hashers.PBKDF2PasswordHasher',
+'django.contrib.auth.hashers.PBKDF2SHA1PasswordHasher',
+)
+#django1.9 引入了密码印证
+AUTH_PASSWORD_VALIDATORS = [
+{
+'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
+'OPTIONS': { 'min_length': 6, }
+},
+]
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
