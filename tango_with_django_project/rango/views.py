@@ -24,11 +24,11 @@ def index(request):
     context_dict = {'boldmessage':"Crunchy, creamy, cookie, candy, cupcake!",
                     'categories':categorylist,
                     'pages':pagelist,
-                    'visits':int(request.COOKIES.get('visits','1')),
-                    }
-    response = render(request,'rango/index.html',context = context_dict)
 
-    visitor_cookie_handle(request,response)
+                    }
+    visitor_cookie_handle(request)
+    context_dict['visits'] = request.session['visits']
+    response = render(request,'rango/index.html',context = context_dict)
 
     return response
 
@@ -164,7 +164,7 @@ def user_logout(request):
     return HttpResponseRedirect(reverse('index'))
 
 #辅助函数
-def visitor_cookie_handle(request,response):
+def visitor_cookie_handle1(request,response):
     #获取网站的访问次数，如果visits存在，则转换为整数，如果不存在，赋值为1
     visits = int(request.COOKIES.get('visits','1'))
 
@@ -180,3 +180,30 @@ def visitor_cookie_handle(request,response):
         response.set_cookie('last_visit',last_visit_cookie)
 
     response.set_cookie('visits',visits)
+
+#
+def get_server_side_cookie(request,cookie,default_val=None):
+    val = request.session.get(cookie)
+    if not val:
+        val = default_val
+    return val
+
+#更新后的函数定义
+def visitor_cookie_handle(request):
+    visits = int(get_server_side_cookie(request,'visits','1'))
+    last_visit_cookie = get_server_side_cookie(request,
+                                               'last_visit',
+                                               str(datetime.now()))
+    last_visit_time = datetime.strptime(last_visit_cookie[:-7],
+                                        '%Y-%m-%d %H:%M:%S')
+
+    #距离上次访问的时间超过了一天
+    if (datetime.now() - last_visit_time).days > 0:
+        visits = visits + 1
+        # 增加访问次数后更新“last_visit”cookie
+        request.session['last_visit'] = str(datetime.now())
+    else:
+        # 设定“last_visit”cookie
+        request.session['last_visit'] = last_visit_cookie
+    # 更新或设定“visits”cookie
+    request.session['visits'] = visits
