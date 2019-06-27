@@ -163,6 +163,10 @@ def user_logout(request):
     logout(request)
     return HttpResponseRedirect(reverse('index'))
 
+@login_required
+def logout(request):
+    return render(request,'registration/logout.html',{})
+
 #辅助函数
 def visitor_cookie_handle1(request,response):
     #获取网站的访问次数，如果visits存在，则转换为整数，如果不存在，赋值为1

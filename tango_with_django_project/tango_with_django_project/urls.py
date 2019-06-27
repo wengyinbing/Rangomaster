@@ -17,11 +17,23 @@ from django.contrib import admin
 from django.urls import path
 from django.conf.urls import url,include
 from rango import views
+from registration.backends.simple.views import RegistrationView
+
+# 定义一个类
+# 用户成功注册后重定向到首页
+class MyRegistrationView(RegistrationView):
+    def get_success_url(self, user):
+        return '/index/'
+
+
 urlpatterns = [
     #path('admin/', admin.site.urls),
     #path("",index ,name = 'index')
     url(r'^$',views.index,name='index'),
     url(r'^admin/',admin.site.urls),
-    url(r'^rango/',include('rango.urls'))
+    url(r'^rango/',include('rango.urls')),
+    url(r'^accounts/register/$',MyRegistrationView.as_view(),name='registration_register'),
     #上面把rango开头的交给rango应用处理
+    url(r'^accounts/', include('registration.backends.simple.urls')),
+    url(r'^registration/logout$',views.logout,name='logout')
 ]
