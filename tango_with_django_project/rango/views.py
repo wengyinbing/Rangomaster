@@ -11,6 +11,7 @@ from django.core.urlresolvers import reverse
 '''
 from django.contrib.auth.decorators import login_required
 from datetime import datetime
+from rango.webhose_search import *
 
 def index(request):
     print("index")
@@ -211,3 +212,18 @@ def visitor_cookie_handle(request):
         request.session['last_visit'] = last_visit_cookie
     # 更新或设定“visits”cookie
     request.session['visits'] = visits
+
+def search(request):
+    result_list = []
+    query = None
+    dict = {}
+    if request.method == 'POST':
+        query = request.POST['query'].strip()
+        print(query)
+        if query:
+            # 调用前面定义的函数向 Webhose 发起查询，获得结果列表
+            result_list = run_query(query)
+        dict['result_list'] = result_list
+        if  query:
+            dict['q'] = query
+    return render(request, 'rango/search.html', dict)
