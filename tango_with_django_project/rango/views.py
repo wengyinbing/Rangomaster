@@ -5,6 +5,8 @@ from rango.form  import CategoryForm,PageForm,UserProfile,UserForm,UserProfileFo
 from django.contrib.auth import authenticate, login,logout
 from django.http import HttpResponseRedirect, HttpResponse
 from django.urls import reverse
+from django.shortcuts import redirect
+
 '''
 django从1.9迁移到了2.0 将 django.urls
 from django.core.urlresolvers import reverse 
@@ -33,9 +35,27 @@ def index(request):
 
     return response
 
+def search(request):
+    result_list = []
+    query = None
+    dict = {}
+    if request.method == 'POST':
+        query = request.POST['query'].strip()
+        print(query)
+        if query:
+            # 调用前面定义的函数向 Webhose 发起查询，获得结果列表
+            result_list = run_query(query)
+        dict['result_list'] = result_list
+        if  query:
+            dict['q'] = query
+    return render(request, 'rango/search.html', dict)
+
 def show_category(request, category_name_slug):
     # 创建上下文字典，稍后传给模板渲染引擎
     context_dict = {}
+    result_list = []
+    query = None
+    dict = {}
     try:
         # 能通过传入的分类别名找到对应的分类吗？
         # 如果找不到，.get() 方法抛出 DoesNotExist 异常
@@ -49,6 +69,15 @@ def show_category(request, category_name_slug):
         # 也把从数据库中获取的 category 对象添加到上下文字典中
         # 我们将在模板中通过这个变量确认分类是否存在
         context_dict['category'] = category
+        if request.method == 'POST':
+            query = request.POST['query'].strip()
+            print(query)
+            if query:
+                # 调用前面定义的函数向 Webhose 发起查询，获得结果列表
+                result_list = run_query(query)
+            context_dict['result_list'] = result_list
+            if query:
+                context_dict['q'] = query
     except Category.DoesNotExist:
         # 没找到指定的分类时执行这里
         # 什么也不做
@@ -213,17 +242,19 @@ def visitor_cookie_handle(request):
     # 更新或设定“visits”cookie
     request.session['visits'] = visits
 
-def search(request):
-    result_list = []
-    query = None
-    dict = {}
-    if request.method == 'POST':
-        query = request.POST['query'].strip()
-        print(query)
-        if query:
-            # 调用前面定义的函数向 Webhose 发起查询，获得结果列表
-            result_list = run_query(query)
-        dict['result_list'] = result_list
-        if  query:
-            dict['q'] = query
-    return render(request, 'rango/search.html', dict)
+
+def track_url(request):
+    page_id = None
+    page = None
+    if request.method == 'GET':
+        if 'page_id' in request.GET:
+            page_id = request.GET['page_id']
+        page = Page.objects.get(id=page_id)
+        if page:
+            #找到该网页，将它的属性views += 1 save一下
+            #之后通过redirect重定向到page.url
+            page.views += 1
+            print(page.views)
+            page.save()
+            return redirect(page.url)
+    return render(request,'rango/index.html',{})

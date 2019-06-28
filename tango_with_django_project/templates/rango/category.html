@@ -8,13 +8,13 @@
 
 
 {% block body_block %}
-    <a href="/">返回首页</a>
+
     {% if category %}
         <h1>{{ category.name }}</h1>
         {% if pages %}
         <ul>
             {% for page in pages %}
-            <li><a href="{{ page.url }}">{{ page.title }}</a></li>
+            <li><a href="{% url 'rango:track_url' %}?page_id={{page.id}}">{{ page.title }}</a></li>
             {% endfor %}
         </ul>
         {% else %}
@@ -23,5 +23,41 @@
     {% else %}
         The specified category does not exist!
     {% endif %}
+
+{% if user.authenticated %}
+<div>
+    <hr/>
+    <h1>Search with Rango</h1>
+    <br/>
+    <form class="form-inline" id="user_form" method="post" action="{% url 'rango:show_category' category.slug %}">
+        {% csrf_token %}
+        <div class="form-group">
+            <input class="form-control" type="text" size="50" name="query" value="{{ q }}" id="query"/>
+
+        </div>
+        <button class="btn btn-primary" type="submit" name="submit" value="Search">Search</button>
+    </form>
+    <div>
+        <hr/>
+        {% if result_list %}
+        <h3>搜索{{ q }}的结果为</h3>
+        <div class="list-group">
+            {% for result in result_list %}
+            <div class="list_group-item">
+                <h4 class="list-group-item-heading">
+                    <a href="{{ result.link }}">
+                        {{ result.title }}
+                    </a>
+                </h4>
+                <p class="list-group-item-text">
+                    {{ result.summary }}
+                </p>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endif %}
 
 {% endblock %}
